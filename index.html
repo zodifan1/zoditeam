@@ -47,6 +47,11 @@
         .lock-btn { margin-left: auto; cursor: pointer; opacity: 0.2; font-size: 1.4rem; transition: 0.2s; }
         .lock-btn.locked { opacity: 1; color: var(--ow-orange); }
         .remove-btn { color: #ff4d4d; font-size: 0.85rem; cursor: pointer; margin-left: 6px; }
+
+        /* 맵 섹션 전용 스타일 */
+        .map-unit { padding:4px 10px; background:#1e2126; border:1px solid #383e47; border-radius:6px; font-size:0.85rem; cursor:pointer; color:#bbb; transition: 0.2s; }
+        .map-unit:hover { background: #2a2e35; color: #fff; }
+        .map-unit.done { text-decoration: line-through; color: #555 !important; opacity: 0.5; background: #121417; border-color: #222; }
     </style>
 </head>
 <body>
@@ -96,6 +101,19 @@
 
     <div class="board" id="gameBoard"></div>
 
+    <div class="panel" style="width: 100%; max-width: 1600px; margin-top: 20px; border-color: #3498db;">
+        <div class="panel-title" style="color: #3498db; font-size: 1.1rem;">🗺️맵추첨</div>포함시킬 종류의 맵 ✔️ 제외시킬 맵은 클릭하면 제외가능</small></span>
+        <div id="mapContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
+            </div>
+        
+        <div style="text-align: center; margin-top: 20px; padding: 20px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: center; gap: 15px;">
+            <div id="mapResult" style="font-size: 2rem; font-weight: 900; color: #fff; min-height: 60px; line-height: 1.2;">
+                <span style="color: #555; font-size: 1.2rem;">추첨 버튼을 눌러주세요</span>
+            </div>
+            <button class="btn-shuffle" style="background: #27ae60; min-width: 250px; font-size: 1.2rem;" onclick="drawMap()">맵 랜덤 추첨</button>
+        </div>
+    </div>
+
 <script>
     let currentGame = 'LOL', currentTeamCount = 2, lastCaptains = [];
     const CONFIG = {
@@ -105,35 +123,36 @@
         'PUBG': { type: 'tier', pos: ['1번', '2번', '3번', '4번'], options: ['1T', '2T', '3T', '4T', '5T', '6T', '7T', '8T', '9T']}
     };
 
+    const owMaps = {
+        "쟁탈": ["네팔", "리장 타워", "부산", "사모아", "오아시스", "일리오스"],
+        "호위": ["66번 국도", "지브롤터", "도라도", "리알토", "샴발리 수도원", "서킷 로얄", "쓰레기촌", "하바나"],
+        "혼합": ["눔바니", "미드타운", "블리자드 월드", "아이헨발데", "왕의 길", "파라이수", "할리우드"],
+        "밀기": ["뉴 퀸 스트리트", "이스페란사", "콜로세오", "루나사피"],
+        "플래시포인트": ["뉴 정크 시티", "수라바사", "아틀리스"],
+        "점령": ["볼스카야 인더스트리", "아누비스 신전", "파리", "하나무라", "호라이즌 달 기지"]
+    };
+
     const nameInput = document.getElementById('nameInput');
     const waitingPool = document.getElementById('waitingPool');
 
-    // --- 입력 로직 (공백, 쉼표 감지 추가) ---
     nameInput.addEventListener('input', (e) => {
         const val = nameInput.value;
-        // 쉼표나 공백이 포함되어 있는지 확인
-        if (val.includes(',') || val.includes(' ')) {
-            processNames(val);
-        }
+        if (val.includes(',') || val.includes(' ')) processNames(val);
     });
 
     nameInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault(); // 줄바꿈 방지
-            processNames(nameInput.value);
-        }
+        if (e.key === 'Enter') { e.preventDefault(); processNames(nameInput.value); }
     });
 
     function processNames(inputStr) {
-        // 공백, 쉼표, 엔터를 기준으로 분리하고 빈 값 제거
         const names = inputStr.split(/[,\s\n\r]+/).filter(n => n.trim() !== "");
         names.forEach(n => createAndAddTag(n.trim()));
-        nameInput.value = ''; // 입력창 비우기
+        nameInput.value = '';
     }
 
-    // --- 이하 기존 로직 ---
     function toggleLadder() { const box = document.getElementById('ladderBox'); box.style.display = (box.style.display !== 'block') ? 'block' : 'none'; if (box.style.display === 'block') renderCaptainInputs(); }
     function loadFromPool() { const names = Array.from(document.querySelectorAll('.player-tag .name-text')).map(s => s.innerText); if (names.length === 0) { alert("등록된 명단이 없습니다."); return; } lastCaptains = names; renderCaptainInputs(); }
+    
     function renderCaptainInputs() {
         let html = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;"><span style="font-size: 0.8rem; color: #aaa;">이름을 입력하거나 불러오세요.</span><button class="btn" style="padding:2px 6px; font-size:0.7rem; color:#27ae60; border-color:#27ae60;" onclick="loadFromPool()">명단 불러오기</button></div><div id="capInputsArea">`;
         const count = Math.max(lastCaptains.length, currentTeamCount);
@@ -141,8 +160,10 @@
         html += `</div><div style="display:flex; gap:5px; margin-top:15px;"><button class="btn" style="flex:1; border-color:#555;" onclick="addCapRow()">+ 항목 추가</button><button class="btn" style="flex:1; background:#27ae60; color:#fff; border:none;" onclick="handleStartShuffle()">순서 추첨</button></div>`;
         document.getElementById('ladderResult').innerHTML = html;
     }
+
     function addCapRow() { const area = document.getElementById('capInputsArea'); const div = document.createElement('div'); div.className = 'ladder-row'; div.innerHTML = `<span style="color:#27ae60; font-weight:bold; width:20px;">+</span><input type="text" class="cap-input" value=""> <button style="background:transparent; border:none; color:#555; cursor:pointer;" onclick="this.parentElement.remove()">✕</button>`; area.appendChild(div); }
     function handleStartShuffle() { const inputs = document.querySelectorAll('.cap-input'); const names = Array.from(inputs).map(inp => inp.value.trim()).filter(n => n !== ""); if (names.length === 0) { alert("이름을 입력해주세요."); return; } lastCaptains = names; renderLadderResult(names); }
+    
     function renderLadderResult(names) {
         const shuffled = [...names].sort(() => Math.random() - 0.5);
         let html = '<div style="margin-bottom:10px; font-weight:bold; border-bottom:1px solid #27ae60; color:#fff; padding-bottom:5px;">추첨 결과</div>';
@@ -150,9 +171,12 @@
         html += `<div style="display:flex; gap:5px; margin-top:15px;"><button class="btn" style="flex:1; border-color:#555;" onclick="renderCaptainInputs()">뒤로가기</button><button class="btn" style="flex:1; background:#3498db; color:#fff; border:none;" onclick="handleRedo()">다시 뽑기</button></div>`;
         document.getElementById('ladderResult').innerHTML = html;
     }
+
     function handleRedo() { renderLadderResult(lastCaptains); }
     function renderPoolRows() { waitingPool.innerHTML = ""; CONFIG[currentGame].options.forEach(opt => { const row = document.createElement('div'); row.className = 'pool-row'; row.innerHTML = `<div class="pool-row-label">${opt}</div><div class="pool-row-content" data-row-val="${opt}" ondrop="drop(event)" ondragover="allowDrop(event)"></div>`; waitingPool.appendChild(row); }); }
+    
     function clearAllPlayers() { if(confirm("모든 명단을 초기화하시겠습니까?")) { renderPoolRows(); document.querySelectorAll('.slot .player-tag').forEach(p => p.remove()); document.querySelectorAll('.lock-btn').forEach(l => l.classList.remove('locked')); lastCaptains = []; } }
+    
     function createAndAddTag(name) {
         const opts = CONFIG[currentGame].options;
         const tag = document.createElement('div'); tag.className = 'player-tag'; tag.id = 'p-' + Math.random().toString(36).substr(2, 9);
@@ -161,9 +185,11 @@
         tag.ondragstart = (ev) => ev.dataTransfer.setData("text", ev.target.id);
         const targetRow = waitingPool.querySelector(`[data-row-val="${defaultVal}"]`); if(targetRow) targetRow.appendChild(tag);
     }
+
     function updateTagRow(tag, newVal) { tag.dataset.val = newVal; if(tag.parentElement.classList.contains('pool-row-content')) { const targetRow = waitingPool.querySelector(`[data-row-val="${newVal}"]`); if(targetRow) targetRow.appendChild(tag); } }
     function setGame(game, btn) { currentGame = game; document.querySelectorAll('.game-nav .btn').forEach(b => { if(b.getAttribute('onclick') && b.getAttribute('onclick').includes('setGame')) b.classList.remove('active'); }); btn.classList.add('active'); const players = Array.from(document.querySelectorAll('.player-tag')).map(p => ({name: p.querySelector('.name-text').innerText, val: p.dataset.val})); renderPoolRows(); renderBoard(); players.forEach(p => createAndAddTag(p.name)); }
     function setTeamCount(count, btn) { currentTeamCount = count; document.querySelectorAll('#teamCountNav .btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); renderBoard(); }
+    
     function renderBoard() {
         const board = document.getElementById('gameBoard'); board.innerHTML = "";
         for (let t = 1; t <= currentTeamCount; t++) {
@@ -172,8 +198,10 @@
             board.appendChild(card);
         }
     }
+
     function toggleLock(el) { const p = el.parentElement.querySelector('.player-tag'); if (p) { const isLocked = el.classList.toggle('locked'); p.dataset.isLocked = isLocked ? "true" : "false"; } }
     function syncLockStates(slot, player) { const lockBtn = slot.querySelector('.lock-btn'); if (!lockBtn) return; if (player && player.dataset.isLocked === "true") lockBtn.classList.add('locked'); else lockBtn.classList.remove('locked'); }
+    
     function shuffleLogic() {
         const isMixPosition = document.getElementById('mixPosition').checked; const slots = Array.from(document.querySelectorAll('.slot'));
         document.querySelectorAll('.player-tag').forEach(p => { if (p.dataset.isLocked !== "true") { const row = waitingPool.querySelector(`[data-row-val="${p.dataset.val}"]`); if(row) row.appendChild(p); } });
@@ -189,6 +217,7 @@
             CONFIG.PUBG.options.forEach(o => { while(groups[o].length > 0) { let s = document.querySelector(`.team-${(tidx % currentTeamCount) + 1} .slot:not(:has(.player-tag)):not(:has(.locked))`); if (s) { s.appendChild(groups[o].shift()); syncLockStates(s, s.querySelector('.player-tag')); } tidx++; if (tidx > 200) break; } });
         }
     }
+
     function updatePlayerValue(player, newPos) { const select = player.querySelector('.tier-select-mini'); if (select) { const hasOption = Array.from(select.options).some(opt => opt.value === newPos); if (hasOption) { select.value = newPos; player.dataset.val = newPos; } } }
     function allowDrop(ev) { ev.preventDefault(); }
     function drop(ev) {
@@ -203,7 +232,50 @@
             targetSlot.appendChild(dragged); syncLockStates(targetSlot, dragged);
         } else { const newRowVal = targetSlot.dataset.rowVal; updatePlayerValue(dragged, newRowVal); targetSlot.appendChild(dragged); if (sourceSlot.classList.contains('slot')) syncLockStates(sourceSlot, null); }
     }
-    renderPoolRows(); renderBoard();
+
+    // --- 맵 추첨 로직 추가 ---
+    function initMapManager() {
+        const container = document.getElementById('mapContainer');
+        for (const [cat, maps] of Object.entries(owMaps)) {
+            const catBox = document.createElement('div');
+            catBox.style.cssText = "background: #121417; padding: 12px; border-radius: 10px; border: 1px solid #333;";
+            catBox.innerHTML = `
+                <div style="margin-bottom:10px; font-weight:bold; display:flex; align-items:center; gap:8px;">
+                    <input type="checkbox" id="cat-${cat}" checked style="width:16px; height:16px; cursor:pointer;">
+                    <label for="cat-${cat}" style="color:var(--ow-orange); cursor:pointer; font-size:0.9rem;">${cat}</label>
+                </div>
+                <div id="list-${cat}" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
+            `;
+            container.appendChild(catBox);
+            const listDiv = catBox.querySelector(`#list-${cat}`);
+            maps.forEach(m => {
+                const span = document.createElement('span');
+                span.className = 'map-unit';
+                span.textContent = m;
+                span.onclick = () => span.classList.toggle('done');
+                listDiv.appendChild(span);
+            });
+        }
+    }
+
+    function drawMap() {
+        let pool = [];
+        for (const cat in owMaps) {
+            if (document.getElementById(`cat-${cat}`).checked) {
+                const maps = document.querySelectorAll(`#list-${cat} .map-unit:not(.done)`);
+                maps.forEach(m => pool.push({name: m.textContent, cat: cat}));
+            }
+        }
+        const resDiv = document.getElementById('mapResult');
+        if (pool.length === 0) {
+            resDiv.innerHTML = "<span style='color:#ff4d4d;'>추첨할 맵이 없습니다!</span>";
+            return;
+        }
+        const picked = pool[Math.floor(Math.random() * pool.length)];
+        resDiv.innerHTML = `<span style="font-size:0.9rem; color:var(--ow-orange); opacity:0.8;">[${picked.cat}]</span><br>${picked.name}`;
+    }
+
+    renderPoolRows(); renderBoard(); initMapManager();
 </script>
 </body>
 </html>
