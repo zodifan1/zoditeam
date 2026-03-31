@@ -48,10 +48,14 @@
         .lock-btn.locked { opacity: 1; color: var(--ow-orange); }
         .remove-btn { color: #ff4d4d; font-size: 0.85rem; cursor: pointer; margin-left: 6px; }
 
-        /* 맵 섹션 전용 스타일 */
         .map-unit { padding:4px 10px; background:#1e2126; border:1px solid #383e47; border-radius:6px; font-size:0.85rem; cursor:pointer; color:#bbb; transition: 0.2s; }
         .map-unit:hover { background: #2a2e35; color: #fff; }
         .map-unit.done { text-decoration: line-through; color: #555 !important; opacity: 0.5; background: #121417; border-color: #222; }
+        
+        /* 맵 섹션 텍스트 상단 배치용 스타일 */
+        .map-header { text-align: center; margin-bottom: 20px; width: 100%; }
+        .map-header .title { font-size: 1.5rem; font-weight: 900; color: #3498db; display: block; margin-bottom: 5px; }
+        .map-header .desc { font-size: 0.85rem; color: #888; }
     </style>
 </head>
 <body>
@@ -102,9 +106,13 @@
     <div class="board" id="gameBoard"></div>
 
     <div class="panel" style="width: 100%; max-width: 1600px; margin-top: 20px; border-color: #3498db;">
-        <div class="panel-title" style="color: #3498db; font-size: 1.1rem;">🗺️맵추첨</div>포함시킬 종류의 맵 ✔️ 제외시킬 맵은 클릭하면 제외가능</small></span>
+        <div class="map-header">
+            <span class="title">오버워치 맵 추첨</span>
+            <span class="desc">포함시킬 종류의 맵 ✔️ 제외시킬 맵은 클릭하면 제외가능</span>
+        </div>
+
         <div id="mapContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
-            </div>
+        </div>
         
         <div style="text-align: center; margin-top: 20px; padding: 20px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: center; gap: 15px;">
             <div id="mapResult" style="font-size: 2rem; font-weight: 900; color: #fff; min-height: 60px; line-height: 1.2;">
@@ -116,6 +124,8 @@
 
 <script>
     let currentGame = 'LOL', currentTeamCount = 2, lastCaptains = [];
+    const STORAGE_KEY = "ZODIAC_BOARD_DATA_V2";
+    
     const CONFIG = {
         'LOL': { type: 'pos', pos: ['TOP', 'JNG', 'MID', 'ADC', 'SUP'], options: ['TOP', 'JNG', 'MID', 'ADC', 'SUP', '✨']},
         'OW5': { type: 'pos', pos: ['TANK', 'DPS1', 'DPS2', 'HEAL1', 'HEAL2'], options: ['TANK', 'DPS1', 'DPS2', 'HEAL1', 'HEAL2', '✨']},
@@ -135,6 +145,84 @@
     const nameInput = document.getElementById('nameInput');
     const waitingPool = document.getElementById('waitingPool');
 
+    function saveAllData() {
+        const data = {
+            currentGame,
+            currentTeamCount,
+            players: Array.from(document.querySelectorAll('.player-tag')).map(p => ({
+                name: p.querySelector('.name-text').innerText,
+                val: p.dataset.val,
+                isLocked: p.dataset.isLocked,
+                parentType: p.parentElement.classList.contains('slot') ? 'slot' : 'pool',
+                pos: p.parentElement.dataset.pos || null,
+                team: p.parentElement.classList.contains('slot') ? p.parentElement.parentElement.className.match(/team-(\d+)/)[1] : null,
+                rowVal: p.parentElement.dataset.rowVal || null
+            })),
+            mapStates: Array.from(document.querySelectorAll('.map-unit')).map(m => ({
+                name: m.textContent,
+                done: m.classList.contains('done')
+            })),
+            catStates: Array.from(document.querySelectorAll('input[id^="cat-"]')).map(c => ({
+                id: c.id,
+                checked: c.checked
+            }))
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function loadAllData() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (!saved) {
+            renderPoolRows(); renderBoard(); initMapManager();
+            return;
+        }
+        const data = JSON.parse(saved);
+        currentGame = data.currentGame;
+        currentTeamCount = data.currentTeamCount;
+
+        document.querySelectorAll('.game-nav .btn').forEach(b => {
+            const clickAttr = b.getAttribute('onclick');
+            if(clickAttr && clickAttr.includes(`'${currentGame}'`)) b.classList.add('active');
+            else b.classList.remove('active');
+        });
+        document.querySelectorAll('#teamCountNav .btn').forEach(b => {
+            const clickAttr = b.getAttribute('onclick');
+            if(clickAttr && clickAttr.includes(`${currentTeamCount},`)) b.classList.add('active');
+            else b.classList.remove('active');
+        });
+
+        renderPoolRows();
+        renderBoard();
+        initMapManager();
+
+        data.players.forEach(p => {
+            const tag = createTagElement(p.name, p.val, p.isLocked);
+            if (p.parentType === 'slot') {
+                const slot = document.querySelector(`.team-${p.team} .slot[data-pos="${p.pos}"]`);
+                if (slot) {
+                    slot.appendChild(tag);
+                    syncLockStates(slot, tag);
+                }
+            } else {
+                const row = waitingPool.querySelector(`[data-row-val="${p.rowVal}"]`);
+                if (row) row.appendChild(tag);
+            }
+        });
+
+        if(data.mapStates) {
+            document.querySelectorAll('.map-unit').forEach(m => {
+                const state = data.mapStates.find(s => s.name === m.textContent);
+                if(state && state.done) m.classList.add('done');
+            });
+        }
+        if(data.catStates) {
+            data.catStates.forEach(s => {
+                const el = document.getElementById(s.id);
+                if(el) el.checked = s.checked;
+            });
+        }
+    }
+
     nameInput.addEventListener('input', (e) => {
         const val = nameInput.value;
         if (val.includes(',') || val.includes(' ')) processNames(val);
@@ -146,8 +234,25 @@
 
     function processNames(inputStr) {
         const names = inputStr.split(/[,\s\n\r]+/).filter(n => n.trim() !== "");
-        names.forEach(n => createAndAddTag(n.trim()));
+        names.forEach(n => {
+            const tag = createTagElement(n.trim());
+            const opts = CONFIG[currentGame].options;
+            const defaultVal = opts[opts.length - 1];
+            const targetRow = waitingPool.querySelector(`[data-row-val="${defaultVal}"]`); 
+            if(targetRow) targetRow.appendChild(tag);
+        });
         nameInput.value = '';
+        saveAllData();
+    }
+
+    function createTagElement(name, val, isLocked = "false") {
+        const opts = CONFIG[currentGame].options;
+        const tag = document.createElement('div'); tag.className = 'player-tag'; tag.id = 'p-' + Math.random().toString(36).substr(2, 9);
+        const currentVal = val || opts[opts.length - 1];
+        tag.dataset.val = currentVal; tag.dataset.isLocked = isLocked; tag.draggable = true;
+        tag.innerHTML = `<select class="tier-select-mini" onchange="updateTagRow(this.parentElement, this.value)">${opts.map(o => `<option value="${o}" ${o==currentVal ? 'selected' : ''}>${o}</option>`).join('')}</select><span class="name-text">${name}</span><span class="remove-btn" onclick="this.parentElement.remove(); saveAllData();">✕</span>`;
+        tag.ondragstart = (ev) => ev.dataTransfer.setData("text", ev.target.id);
+        return tag;
     }
 
     function toggleLadder() { const box = document.getElementById('ladderBox'); box.style.display = (box.style.display !== 'block') ? 'block' : 'none'; if (box.style.display === 'block') renderCaptainInputs(); }
@@ -175,20 +280,11 @@
     function handleRedo() { renderLadderResult(lastCaptains); }
     function renderPoolRows() { waitingPool.innerHTML = ""; CONFIG[currentGame].options.forEach(opt => { const row = document.createElement('div'); row.className = 'pool-row'; row.innerHTML = `<div class="pool-row-label">${opt}</div><div class="pool-row-content" data-row-val="${opt}" ondrop="drop(event)" ondragover="allowDrop(event)"></div>`; waitingPool.appendChild(row); }); }
     
-    function clearAllPlayers() { if(confirm("모든 명단을 초기화하시겠습니까?")) { renderPoolRows(); document.querySelectorAll('.slot .player-tag').forEach(p => p.remove()); document.querySelectorAll('.lock-btn').forEach(l => l.classList.remove('locked')); lastCaptains = []; } }
+    function clearAllPlayers() { if(confirm("모든 명단을 초기화하시겠습니까?")) { renderPoolRows(); document.querySelectorAll('.slot .player-tag').forEach(p => p.remove()); document.querySelectorAll('.lock-btn').forEach(l => l.classList.remove('locked')); lastCaptains = []; localStorage.removeItem(STORAGE_KEY); location.reload(); } }
     
-    function createAndAddTag(name) {
-        const opts = CONFIG[currentGame].options;
-        const tag = document.createElement('div'); tag.className = 'player-tag'; tag.id = 'p-' + Math.random().toString(36).substr(2, 9);
-        const defaultVal = opts[opts.length - 1]; tag.dataset.val = defaultVal; tag.dataset.isLocked = "false"; tag.draggable = true;
-        tag.innerHTML = `<select class="tier-select-mini" onchange="updateTagRow(this.parentElement, this.value)">${opts.map(o => `<option value="${o}" ${o==defaultVal ? 'selected' : ''}>${o}</option>`).join('')}</select><span class="name-text">${name}</span><span class="remove-btn" onclick="this.parentElement.remove()">✕</span>`;
-        tag.ondragstart = (ev) => ev.dataTransfer.setData("text", ev.target.id);
-        const targetRow = waitingPool.querySelector(`[data-row-val="${defaultVal}"]`); if(targetRow) targetRow.appendChild(tag);
-    }
-
-    function updateTagRow(tag, newVal) { tag.dataset.val = newVal; if(tag.parentElement.classList.contains('pool-row-content')) { const targetRow = waitingPool.querySelector(`[data-row-val="${newVal}"]`); if(targetRow) targetRow.appendChild(tag); } }
-    function setGame(game, btn) { currentGame = game; document.querySelectorAll('.game-nav .btn').forEach(b => { if(b.getAttribute('onclick') && b.getAttribute('onclick').includes('setGame')) b.classList.remove('active'); }); btn.classList.add('active'); const players = Array.from(document.querySelectorAll('.player-tag')).map(p => ({name: p.querySelector('.name-text').innerText, val: p.dataset.val})); renderPoolRows(); renderBoard(); players.forEach(p => createAndAddTag(p.name)); }
-    function setTeamCount(count, btn) { currentTeamCount = count; document.querySelectorAll('#teamCountNav .btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); renderBoard(); }
+    function updateTagRow(tag, newVal) { tag.dataset.val = newVal; if(tag.parentElement.classList.contains('pool-row-content')) { const targetRow = waitingPool.querySelector(`[data-row-val="${newVal}"]`); if(targetRow) targetRow.appendChild(tag); } saveAllData(); }
+    function setGame(game, btn) { currentGame = game; document.querySelectorAll('.game-nav .btn').forEach(b => { if(b.getAttribute('onclick') && b.getAttribute('onclick').includes('setGame')) b.classList.remove('active'); }); btn.classList.add('active'); const players = Array.from(document.querySelectorAll('.player-tag')).map(p => ({name: p.querySelector('.name-text').innerText, val: p.dataset.val})); renderPoolRows(); renderBoard(); players.forEach(p => { const tag = createTagElement(p.name); const opts = CONFIG[currentGame].options; const targetRow = waitingPool.querySelector(`[data-row-val="${opts[opts.length-1]}"]`); if(targetRow) targetRow.appendChild(tag); }); saveAllData(); }
+    function setTeamCount(count, btn) { currentTeamCount = count; document.querySelectorAll('#teamCountNav .btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); renderBoard(); saveAllData(); }
     
     function renderBoard() {
         const board = document.getElementById('gameBoard'); board.innerHTML = "";
@@ -199,7 +295,7 @@
         }
     }
 
-    function toggleLock(el) { const p = el.parentElement.querySelector('.player-tag'); if (p) { const isLocked = el.classList.toggle('locked'); p.dataset.isLocked = isLocked ? "true" : "false"; } }
+    function toggleLock(el) { const p = el.parentElement.querySelector('.player-tag'); if (p) { const isLocked = el.classList.toggle('locked'); p.dataset.isLocked = isLocked ? "true" : "false"; } saveAllData(); }
     function syncLockStates(slot, player) { const lockBtn = slot.querySelector('.lock-btn'); if (!lockBtn) return; if (player && player.dataset.isLocked === "true") lockBtn.classList.add('locked'); else lockBtn.classList.remove('locked'); }
     
     function shuffleLogic() {
@@ -216,6 +312,7 @@
             let groups = {}; CONFIG.PUBG.options.forEach(o => groups[o] = []); targets.forEach(p => groups[p.dataset.val].push(p)); let tidx = 0;
             CONFIG.PUBG.options.forEach(o => { while(groups[o].length > 0) { let s = document.querySelector(`.team-${(tidx % currentTeamCount) + 1} .slot:not(:has(.player-tag)):not(:has(.locked))`); if (s) { s.appendChild(groups[o].shift()); syncLockStates(s, s.querySelector('.player-tag')); } tidx++; if (tidx > 200) break; } });
         }
+        saveAllData();
     }
 
     function updatePlayerValue(player, newPos) { const select = player.querySelector('.tier-select-mini'); if (select) { const hasOption = Array.from(select.options).some(opt => opt.value === newPos); if (hasOption) { select.value = newPos; player.dataset.val = newPos; } } }
@@ -231,17 +328,17 @@
             else { if (sourceSlot.classList.contains('slot')) syncLockStates(sourceSlot, null); }
             targetSlot.appendChild(dragged); syncLockStates(targetSlot, dragged);
         } else { const newRowVal = targetSlot.dataset.rowVal; updatePlayerValue(dragged, newRowVal); targetSlot.appendChild(dragged); if (sourceSlot.classList.contains('slot')) syncLockStates(sourceSlot, null); }
+        saveAllData();
     }
 
-    // --- 맵 추첨 로직 추가 ---
     function initMapManager() {
-        const container = document.getElementById('mapContainer');
+        const container = document.getElementById('mapContainer'); container.innerHTML = "";
         for (const [cat, maps] of Object.entries(owMaps)) {
             const catBox = document.createElement('div');
             catBox.style.cssText = "background: #121417; padding: 12px; border-radius: 10px; border: 1px solid #333;";
             catBox.innerHTML = `
                 <div style="margin-bottom:10px; font-weight:bold; display:flex; align-items:center; gap:8px;">
-                    <input type="checkbox" id="cat-${cat}" checked style="width:16px; height:16px; cursor:pointer;">
+                    <input type="checkbox" id="cat-${cat}" checked style="width:16px; height:16px; cursor:pointer;" onchange="saveAllData()">
                     <label for="cat-${cat}" style="color:var(--ow-orange); cursor:pointer; font-size:0.9rem;">${cat}</label>
                 </div>
                 <div id="list-${cat}" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
@@ -252,7 +349,7 @@
                 const span = document.createElement('span');
                 span.className = 'map-unit';
                 span.textContent = m;
-                span.onclick = () => span.classList.toggle('done');
+                span.onclick = () => { span.classList.toggle('done'); saveAllData(); };
                 listDiv.appendChild(span);
             });
         }
@@ -275,7 +372,7 @@
         resDiv.innerHTML = `<span style="font-size:0.9rem; color:var(--ow-orange); opacity:0.8;">[${picked.cat}]</span><br>${picked.name}`;
     }
 
-    renderPoolRows(); renderBoard(); initMapManager();
+    loadAllData();
 </script>
 </body>
 </html>
