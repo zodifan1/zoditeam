@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>조디악방 판떼기</title>
+    <style>
+        :root {
+            --ow-orange: #f06414;
+            --bg-body: #121417;
+            --bg-panel: #1e2126;
+            --text-main: #e0e0e0;
+            --border-color: #383e47;
+            --card-width: 315px;
+        }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding: 15px 20px; display: flex; flex-direction: column; align-items: center; }
+        h1 { margin: 10px 0 20px 0 !important; font-size: 2.5rem !important; font-weight: 900; letter-spacing: -1px; color: #fff; }
+        .top-container { display: grid; grid-template-columns: 0.8fr 1.8fr 1fr; gap: 15px; width: 100%; max-width: 1600px; margin-bottom: 20px; align-items: stretch; }
+        .panel { background: var(--bg-panel); border-radius: 12px; border: 1px solid var(--border-color); padding: 15px; display: flex; flex-direction: column; }
+        .panel-title { font-size: 0.9rem; font-weight: 800; color: var(--ow-orange); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        #nameInput { width: 100%; padding: 10px; background: #121417; border: 1px solid var(--border-color); border-radius: 8px; color: #fff; font-size: 1.05rem; outline: none; box-sizing: border-box; }
+        #waitingPool { display: flex; flex-direction: column; gap: 0px; }
+        .pool-row { display: flex; align-items: center; gap: 10px; padding: 4px 8px; border-bottom: 1px solid #2a2e35; min-height: 42px; }
+        .pool-row-label { width: 55px; font-size: 0.75rem; font-weight: 800; color: #777; flex-shrink: 0; text-align: center; border-right: 1px solid #333; }
+        .pool-row-content { display: flex; flex-wrap: wrap; gap: 6px; flex-grow: 1; min-height: 35px; }
+        .player-tag { background: #ffffff; color: #000; padding: 5px 12px; border-radius: 5px; font-weight: 800; cursor: grab; font-size: 1rem; display: inline-flex; align-items: center; box-shadow: 0 3px 5px rgba(0,0,0,0.3); }
+        .tier-select-mini { background: #fff; color: #000; border: none; font-weight: 900; font-size: 0.75rem; cursor: pointer; margin-right: 6px; border-radius: 4px; padding: 1px 3px; }
+        .game-nav { display: flex; flex-direction: column; gap: 10px; }
+        .nav-row { display: flex; gap: 6px; justify-content: center; align-items: center; }
+        .btn { padding: 7px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; border: 1px solid var(--border-color); background: transparent; color: #888; font-size: 0.9rem; }
+        .btn.active { background: var(--ow-orange); color: white; border-color: var(--ow-orange); }
+        .btn-shuffle { background: #3498db; color: white; border: none; padding: 12px; font-size: 1.4rem; border-radius: 10px; cursor: pointer; font-weight: 900; margin-top: 5px; }
+        .shuffle-option-box { display: flex; justify-content: center; align-items: center; margin-top: 5px; margin-bottom: 5px; }
+        .shuffle-option { display: flex; align-items: center; gap: 6px; color: #888; font-size: 0.75rem; cursor: pointer; user-select: none; }
+        .shuffle-option input { cursor: pointer; margin: 0; width: 14px; height: 14px; }
+        .btn-clear { background: #c0392b; color: white; border: none; padding: 3px 7px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; }
+        #ladderWidget { margin-top: 8px; position: relative; }
+        #ladderToggle { width: 100%; background: #27ae60; color: white; border: none; border-radius: 8px; padding: 10px; font-weight: 800; cursor: pointer; font-size: 1rem; }
+        #ladderBox { display: none; position: absolute; right: 0; top: 50px; z-index: 1000; background: #1e2126; border: 2px solid #27ae60; border-radius: 12px; padding: 20px; box-shadow: 0 10px 50px rgba(0,0,0,0.9); width: 280px; }
+        .ladder-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .cap-input { flex: 1; background: #121417; border: 1px solid #333; color: #fff; padding: 6px; border-radius: 4px; font-size: 0.9rem; }
+        .board { display: flex; flex-wrap: wrap; gap: 18px; justify-content: center; width: 100%; padding: 10px; margin-top: 10px; }
+        .team-card { background: var(--bg-panel); border-radius: 12px; padding: 15px; border-top: 10px solid #555; width: var(--card-width); flex-shrink: 0; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .team-1 { border-top-color: #3498db; } .team-2 { border-top-color: #e74c3c; } .team-3 { border-top-color: #f1c40f; } .team-4 { border-top-color: #9b59b6; }
+        .team-title { text-align: center; font-size: 1.6rem; font-weight: 900; margin-bottom: 15px; }
+        .slot { background: #121417; border: 1px dashed #333; margin-bottom: 8px; padding: 8px 14px; border-radius: 10px; display: flex; align-items: center; min-height: 52px; gap: 12px; position: relative; }
+        .slot-label { width: 60px; font-weight: 800; color: var(--ow-orange); font-size: 0.8rem; }
+        .lock-btn { margin-left: auto; cursor: pointer; opacity: 0.2; font-size: 1.4rem; transition: 0.2s; }
+        .lock-btn.locked { opacity: 1; color: var(--ow-orange); }
+        .remove-btn { color: #ff4d4d; font-size: 0.85rem; cursor: pointer; margin-left: 6px; }
+    </style>
+</head>
+<body>
+
+    <h1>조디악방 판떼기</h1>
+
+    <div class="top-container">
+        <div class="panel">
+            <div class="panel-title">스트리머 등록</div>
+            <input type="text" id="nameInput" placeholder="이름 입력 (공백/쉼표/엔터)">
+        </div>
+        <div class="panel">
+            <div class="panel-title">
+                <span>등록된 명단 <small style="font-size: 0.75rem; color: #666;">🔒ON/OFF시 고정 or 묶밸 가능</small></span>
+                <button class="btn-clear" onclick="clearAllPlayers()">명단 비우기</button>
+            </div>
+            <div id="waitingPool"></div>
+        </div>
+        <div class="panel">
+            <div class="game-nav">
+                <div class="nav-row">
+                    <button class="btn active" onclick="setGame('LOL', this)">LOL</button>
+                    <button class="btn" onclick="setGame('OW5', this)">OW 5:5</button>
+                    <button class="btn" onclick="setGame('OW6', this)">OW 6:6</button>
+                    <button class="btn" onclick="setGame('PUBG', this)">PUBG</button>
+                </div>
+                <div class="nav-row" id="teamCountNav" style="margin-top: 5px;">
+                    <span style="font-size: 0.75rem; color: #666; margin-right: 5px;">팀 수 선택:</span>
+                    <button class="btn active" onclick="setTeamCount(2, this)">2팀</button>
+                    <button class="btn" onclick="setTeamCount(3, this)">3팀</button>
+                    <button class="btn" onclick="setTeamCount(4, this)">4팀</button>
+                </div>
+                <button class="btn-shuffle" onclick="shuffleLogic()">랜덤 섞기</button>
+                <div class="shuffle-option-box">
+                    <label class="shuffle-option"><input type="checkbox" id="mixPosition"> 포지션까지 섞기</label>
+                </div>
+                <div id="ladderWidget">
+                    <button id="ladderToggle" onclick="toggleLadder()">🎲 팀뽑 순서 정하기</button>
+                    <div id="ladderBox">
+                        <div class="panel-title" style="color:#27ae60">🎲 순서 정하기 <span style="cursor:pointer;color:#888;" onclick="toggleLadder()">✕</span></div>
+                        <div id="ladderResult"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="board" id="gameBoard"></div>
+
+<script>
+    let currentGame = 'LOL', currentTeamCount = 2, lastCaptains = [];
+    const CONFIG = {
+        'LOL': { type: 'pos', pos: ['TOP', 'JNG', 'MID', 'ADC', 'SUP'], options: ['TOP', 'JNG', 'MID', 'ADC', 'SUP', '✨']},
+        'OW5': { type: 'pos', pos: ['TANK', 'DPS1', 'DPS2', 'HEAL1', 'HEAL2'], options: ['TANK', 'DPS1', 'DPS2', 'HEAL1', 'HEAL2', '✨']},
+        'OW6': { type: 'pos', pos: ['TANK1', 'TANK2', 'DPS1', 'DPS2', 'HEAL1', 'HEAL2'], options: ['TANK1', 'TANK2', 'DPS1', 'DPS2', 'HEAL1', 'HEAL2', '✨']},
+        'PUBG': { type: 'tier', pos: ['1번', '2번', '3번', '4번'], options: ['1T', '2T', '3T', '4T', '5T', '6T', '7T', '8T', '9T']}
+    };
+
+    const nameInput = document.getElementById('nameInput');
+    const waitingPool = document.getElementById('waitingPool');
+
+    // --- 입력 로직 (공백, 쉼표 감지 추가) ---
+    nameInput.addEventListener('input', (e) => {
+        const val = nameInput.value;
+        // 쉼표나 공백이 포함되어 있는지 확인
+        if (val.includes(',') || val.includes(' ')) {
+            processNames(val);
+        }
+    });
+
+    nameInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault(); // 줄바꿈 방지
+            processNames(nameInput.value);
+        }
+    });
+
+    function processNames(inputStr) {
+        // 공백, 쉼표, 엔터를 기준으로 분리하고 빈 값 제거
+        const names = inputStr.split(/[,\s\n\r]+/).filter(n => n.trim() !== "");
+        names.forEach(n => createAndAddTag(n.trim()));
+        nameInput.value = ''; // 입력창 비우기
+    }
+
+    // --- 이하 기존 로직 ---
+    function toggleLadder() { const box = document.getElementById('ladderBox'); box.style.display = (box.style.display !== 'block') ? 'block' : 'none'; if (box.style.display === 'block') renderCaptainInputs(); }
+    function loadFromPool() { const names = Array.from(document.querySelectorAll('.player-tag .name-text')).map(s => s.innerText); if (names.length === 0) { alert("등록된 명단이 없습니다."); return; } lastCaptains = names; renderCaptainInputs(); }
+    function renderCaptainInputs() {
+        let html = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;"><span style="font-size: 0.8rem; color: #aaa;">이름을 입력하거나 불러오세요.</span><button class="btn" style="padding:2px 6px; font-size:0.7rem; color:#27ae60; border-color:#27ae60;" onclick="loadFromPool()">명단 불러오기</button></div><div id="capInputsArea">`;
+        const count = Math.max(lastCaptains.length, currentTeamCount);
+        for(let i=0; i<count; i++) { html += `<div class="ladder-row"><span style="color:#27ae60; font-weight:bold; width:20px;">${i+1}</span><input type="text" class="cap-input" value="${lastCaptains[i]||''}"> <button style="background:transparent; border:none; color:#555; cursor:pointer;" onclick="this.parentElement.remove()">✕</button></div>`; }
+        html += `</div><div style="display:flex; gap:5px; margin-top:15px;"><button class="btn" style="flex:1; border-color:#555;" onclick="addCapRow()">+ 항목 추가</button><button class="btn" style="flex:1; background:#27ae60; color:#fff; border:none;" onclick="handleStartShuffle()">순서 추첨</button></div>`;
+        document.getElementById('ladderResult').innerHTML = html;
+    }
+    function addCapRow() { const area = document.getElementById('capInputsArea'); const div = document.createElement('div'); div.className = 'ladder-row'; div.innerHTML = `<span style="color:#27ae60; font-weight:bold; width:20px;">+</span><input type="text" class="cap-input" value=""> <button style="background:transparent; border:none; color:#555; cursor:pointer;" onclick="this.parentElement.remove()">✕</button>`; area.appendChild(div); }
+    function handleStartShuffle() { const inputs = document.querySelectorAll('.cap-input'); const names = Array.from(inputs).map(inp => inp.value.trim()).filter(n => n !== ""); if (names.length === 0) { alert("이름을 입력해주세요."); return; } lastCaptains = names; renderLadderResult(names); }
+    function renderLadderResult(names) {
+        const shuffled = [...names].sort(() => Math.random() - 0.5);
+        let html = '<div style="margin-bottom:10px; font-weight:bold; border-bottom:1px solid #27ae60; color:#fff; padding-bottom:5px;">추첨 결과</div>';
+        shuffled.forEach((name, idx) => { html += `<div class="ladder-row" style="background:rgba(255,255,255,0.05); padding:8px; border-radius:4px; margin-bottom:5px;"><span style="color:#27ae60; font-weight:bold; width:45px;">${idx + 1}순위</span><span style="color:#fff">${name}</span></div>`; });
+        html += `<div style="display:flex; gap:5px; margin-top:15px;"><button class="btn" style="flex:1; border-color:#555;" onclick="renderCaptainInputs()">뒤로가기</button><button class="btn" style="flex:1; background:#3498db; color:#fff; border:none;" onclick="handleRedo()">다시 뽑기</button></div>`;
+        document.getElementById('ladderResult').innerHTML = html;
+    }
+    function handleRedo() { renderLadderResult(lastCaptains); }
+    function renderPoolRows() { waitingPool.innerHTML = ""; CONFIG[currentGame].options.forEach(opt => { const row = document.createElement('div'); row.className = 'pool-row'; row.innerHTML = `<div class="pool-row-label">${opt}</div><div class="pool-row-content" data-row-val="${opt}" ondrop="drop(event)" ondragover="allowDrop(event)"></div>`; waitingPool.appendChild(row); }); }
+    function clearAllPlayers() { if(confirm("모든 명단을 초기화하시겠습니까?")) { renderPoolRows(); document.querySelectorAll('.slot .player-tag').forEach(p => p.remove()); document.querySelectorAll('.lock-btn').forEach(l => l.classList.remove('locked')); lastCaptains = []; } }
+    function createAndAddTag(name) {
+        const opts = CONFIG[currentGame].options;
+        const tag = document.createElement('div'); tag.className = 'player-tag'; tag.id = 'p-' + Math.random().toString(36).substr(2, 9);
+        const defaultVal = opts[opts.length - 1]; tag.dataset.val = defaultVal; tag.dataset.isLocked = "false"; tag.draggable = true;
+        tag.innerHTML = `<select class="tier-select-mini" onchange="updateTagRow(this.parentElement, this.value)">${opts.map(o => `<option value="${o}" ${o==defaultVal ? 'selected' : ''}>${o}</option>`).join('')}</select><span class="name-text">${name}</span><span class="remove-btn" onclick="this.parentElement.remove()">✕</span>`;
+        tag.ondragstart = (ev) => ev.dataTransfer.setData("text", ev.target.id);
+        const targetRow = waitingPool.querySelector(`[data-row-val="${defaultVal}"]`); if(targetRow) targetRow.appendChild(tag);
+    }
+    function updateTagRow(tag, newVal) { tag.dataset.val = newVal; if(tag.parentElement.classList.contains('pool-row-content')) { const targetRow = waitingPool.querySelector(`[data-row-val="${newVal}"]`); if(targetRow) targetRow.appendChild(tag); } }
+    function setGame(game, btn) { currentGame = game; document.querySelectorAll('.game-nav .btn').forEach(b => { if(b.getAttribute('onclick') && b.getAttribute('onclick').includes('setGame')) b.classList.remove('active'); }); btn.classList.add('active'); const players = Array.from(document.querySelectorAll('.player-tag')).map(p => ({name: p.querySelector('.name-text').innerText, val: p.dataset.val})); renderPoolRows(); renderBoard(); players.forEach(p => createAndAddTag(p.name)); }
+    function setTeamCount(count, btn) { currentTeamCount = count; document.querySelectorAll('#teamCountNav .btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); renderBoard(); }
+    function renderBoard() {
+        const board = document.getElementById('gameBoard'); board.innerHTML = "";
+        for (let t = 1; t <= currentTeamCount; t++) {
+            const card = document.createElement('div'); card.className = `team-card team-${t}`; card.innerHTML = `<div class="team-title">TEAM ${t}</div>`;
+            CONFIG[currentGame].pos.forEach((pos) => { const slot = document.createElement('div'); slot.className = 'slot'; slot.dataset.pos = pos; slot.setAttribute('ondrop', 'drop(event)'); slot.setAttribute('ondragover', 'allowDrop(event)'); slot.innerHTML = `<div class="slot-label">${pos}</div><div class="lock-btn" onclick="toggleLock(this)">🔒</div>`; card.appendChild(slot); });
+            board.appendChild(card);
+        }
+    }
+    function toggleLock(el) { const p = el.parentElement.querySelector('.player-tag'); if (p) { const isLocked = el.classList.toggle('locked'); p.dataset.isLocked = isLocked ? "true" : "false"; } }
+    function syncLockStates(slot, player) { const lockBtn = slot.querySelector('.lock-btn'); if (!lockBtn) return; if (player && player.dataset.isLocked === "true") lockBtn.classList.add('locked'); else lockBtn.classList.remove('locked'); }
+    function shuffleLogic() {
+        const isMixPosition = document.getElementById('mixPosition').checked; const slots = Array.from(document.querySelectorAll('.slot'));
+        document.querySelectorAll('.player-tag').forEach(p => { if (p.dataset.isLocked !== "true") { const row = waitingPool.querySelector(`[data-row-val="${p.dataset.val}"]`); if(row) row.appendChild(p); } });
+        let targets = Array.from(document.querySelectorAll('.pool-row-content .player-tag')).sort(() => Math.random() - 0.5);
+        if (targets.length === 0) return;
+        const availableSlots = slots.filter(s => !s.querySelector('.player-tag') && !s.querySelector('.lock-btn').classList.contains('locked')).length;
+        if (targets.length > availableSlots) { alert(`⚠️ 자리가 부족합니다!\n현재 비어있는 칸: ${availableSlots}개 / 대기 인원: ${targets.length}명\n팀 수를 늘리거나 명단을 조절해주세요.`); return; }
+        if (CONFIG[currentGame].type === 'pos') {
+            if (!isMixPosition) { targets = targets.filter(p => { if (p.dataset.val === '✨') return true; const s = slots.find(s => !s.querySelector('.player-tag') && !s.querySelector('.lock-btn').classList.contains('locked') && s.dataset.pos === p.dataset.val); if (s) { updatePlayerValue(p, s.dataset.pos); s.appendChild(p); syncLockStates(s, p); return false; } return true; }); }
+            targets.forEach(p => { const s = slots.find(s => !s.querySelector('.player-tag') && !s.querySelector('.lock-btn').classList.contains('locked')); if (s) { updatePlayerValue(p, s.dataset.pos); s.appendChild(p); syncLockStates(s, p); } });
+        } else {
+            let groups = {}; CONFIG.PUBG.options.forEach(o => groups[o] = []); targets.forEach(p => groups[p.dataset.val].push(p)); let tidx = 0;
+            CONFIG.PUBG.options.forEach(o => { while(groups[o].length > 0) { let s = document.querySelector(`.team-${(tidx % currentTeamCount) + 1} .slot:not(:has(.player-tag)):not(:has(.locked))`); if (s) { s.appendChild(groups[o].shift()); syncLockStates(s, s.querySelector('.player-tag')); } tidx++; if (tidx > 200) break; } });
+        }
+    }
+    function updatePlayerValue(player, newPos) { const select = player.querySelector('.tier-select-mini'); if (select) { const hasOption = Array.from(select.options).some(opt => opt.value === newPos); if (hasOption) { select.value = newPos; player.dataset.val = newPos; } } }
+    function allowDrop(ev) { ev.preventDefault(); }
+    function drop(ev) {
+        ev.preventDefault(); const draggedId = ev.dataTransfer.getData("text"); const dragged = document.getElementById(draggedId); let targetSlot = ev.target;
+        while (targetSlot && !targetSlot.classList.contains('slot') && !targetSlot.classList.contains('pool-row-content')) targetSlot = targetSlot.parentElement;
+        if (!targetSlot || !dragged) return;
+        const sourceSlot = dragged.parentElement;
+        if (targetSlot.classList.contains('slot')) {
+            const existingPlayer = targetSlot.querySelector('.player-tag'); updatePlayerValue(dragged, targetSlot.dataset.pos);
+            if (existingPlayer) { if (sourceSlot.classList.contains('slot')) { updatePlayerValue(existingPlayer, sourceSlot.dataset.pos); sourceSlot.appendChild(existingPlayer); syncLockStates(sourceSlot, existingPlayer); } else { const row = waitingPool.querySelector(`[data-row-val="${existingPlayer.dataset.val}"]`); if(row) row.appendChild(existingPlayer); } }
+            else { if (sourceSlot.classList.contains('slot')) syncLockStates(sourceSlot, null); }
+            targetSlot.appendChild(dragged); syncLockStates(targetSlot, dragged);
+        } else { const newRowVal = targetSlot.dataset.rowVal; updatePlayerValue(dragged, newRowVal); targetSlot.appendChild(dragged); if (sourceSlot.classList.contains('slot')) syncLockStates(sourceSlot, null); }
+    }
+    renderPoolRows(); renderBoard();
+</script>
+</body>
+</html>
