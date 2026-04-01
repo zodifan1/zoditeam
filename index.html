@@ -12,7 +12,7 @@
             --border-color: #383e47;
             --card-width: 315px;
         }
-        body { font-family: 'Pretendard', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding: 15px 20px; display: flex; flex-direction: column; align-items: center; }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding: 15px 20px; display: flex; flex-direction: column; align-items: center; position: relative; }
         h1 { margin: 10px 0 20px 0 !important; font-size: 2.5rem !important; font-weight: 900; letter-spacing: -1px; color: #fff; }
         .top-container { display: grid; grid-template-columns: 0.8fr 1.8fr 1fr; gap: 15px; width: 100%; max-width: 1600px; margin-bottom: 20px; align-items: stretch; }
         .panel { background: var(--bg-panel); border-radius: 12px; border: 1px solid var(--border-color); padding: 15px; display: flex; flex-direction: column; }
@@ -47,20 +47,29 @@
         .lock-btn { margin-left: auto; cursor: pointer; opacity: 0.2; font-size: 1.4rem; transition: 0.2s; }
         .lock-btn.locked { opacity: 1; color: var(--ow-orange); }
         .remove-btn { color: #ff4d4d; font-size: 0.85rem; cursor: pointer; margin-left: 6px; }
-
         .map-unit { padding:4px 10px; background:#1e2126; border:1px solid #383e47; border-radius:6px; font-size:0.85rem; cursor:pointer; color:#bbb; transition: 0.2s; }
         .map-unit:hover { background: #2a2e35; color: #fff; }
         .map-unit.done { text-decoration: line-through; color: #555 !important; opacity: 0.5; background: #121417; border-color: #222; }
-        
-        /* 강조용 빨간 글씨 스타일 */
         .text-red { color: #ff4d4d !important; font-weight: bold; }
-
         .map-header { text-align: center; margin-bottom: 20px; width: 100%; }
         .map-header .title { font-size: 1.5rem; font-weight: 900; color: #3498db; display: block; margin-bottom: 5px; }
         .map-header .desc { font-size: 0.85rem; color: #888; }
+
+        /* 피드백 문구 전용 스타일 */
+        .feedback-text {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 0.75rem;
+            color: #ffffff;
+            opacity: 0.6;
+            font-weight: normal;
+        }
     </style>
 </head>
 <body>
+
+    <div class="feedback-text">🚨개선사항 또는 피드백 SOOP닉네임 H4rry_ 로 쪽지주세요</div>
 
     <h1>조디악방 판떼기</h1>
 
@@ -335,9 +344,7 @@
 
     function initMapManager() {
         const container = document.getElementById('mapContainer'); container.innerHTML = "";
-        // 빨간 글씨로 표시할 맵 목록
         const mzMaps = ["사모아", "샴발리 수도원", "서킷 로얄", "파라이수", "뉴 퀸 스트리트", "이스페란사", "콜로세오", "루나사피", "뉴 정크 시티", "수라바사", "아틀리스"];
-
         for (const [cat, maps] of Object.entries(owMaps)) {
             const catBox = document.createElement('div');
             catBox.style.cssText = "background: #121417; padding: 12px; border-radius: 10px; border: 1px solid #333;";
@@ -353,10 +360,7 @@
             maps.forEach(m => {
                 const span = document.createElement('span');
                 span.className = 'map-unit';
-                // 지정된 맵 이름이면 text-red 클래스 추가
-                if (mzMaps.includes(m)) {
-                    span.classList.add('text-red');
-                }
+                if (mzMaps.includes(m)) { span.classList.add('text-red'); }
                 span.textContent = m;
                 span.onclick = () => { span.classList.toggle('done'); saveAllData(); };
                 listDiv.appendChild(span);
@@ -373,12 +377,8 @@
             }
         }
         const resDiv = document.getElementById('mapResult');
-        if (pool.length === 0) {
-            resDiv.innerHTML = "<span style='color:#ff4d4d;'>추첨할 맵이 없습니다!</span>";
-            return;
-        }
+        if (pool.length === 0) { resDiv.innerHTML = "<span style='color:#ff4d4d;'>추첨할 맵이 없습니다!</span>"; return; }
         const picked = pool[Math.floor(Math.random() * pool.length)];
-        // 추첨 결과에서도 MZ맵이면 빨간색으로 표시
         const mzMaps = ["사모아", "샴발리 수도원", "서킷 로얄", "파라이수", "뉴 퀸 스트리트","이스페란사", "콜로세오", "루나사피", "뉴 정크 시티", "수라바사", "아틀리스"];
         const isMz = mzMaps.includes(picked.name);
         resDiv.innerHTML = `<span style="font-size:0.9rem; color:var(--ow-orange); opacity:0.8;">[${picked.cat}]</span><br><span class="${isMz ? 'text-red' : ''}">${picked.name}</span>`;
