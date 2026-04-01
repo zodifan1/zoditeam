@@ -13,6 +13,17 @@
             --card-width: 315px;
         }
         body { font-family: 'Pretendard', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding: 15px 20px; display: flex; flex-direction: column; align-items: center; position: relative; }
+        
+        .feedback-notice {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 0.85rem;
+            color: #888;
+            font-weight: 500;
+        }
+        .feedback-notice b { color: var(--ow-orange); }
+
         h1 { margin: 10px 0 20px 0 !important; font-size: 2.5rem !important; font-weight: 900; letter-spacing: -1px; color: #fff; }
         .top-container { display: grid; grid-template-columns: 0.8fr 1.8fr 1fr; gap: 15px; width: 100%; max-width: 1600px; margin-bottom: 20px; align-items: stretch; }
         .panel { background: var(--bg-panel); border-radius: 12px; border: 1px solid var(--border-color); padding: 15px; display: flex; flex-direction: column; }
@@ -24,15 +35,36 @@
         .pool-row-content { display: flex; flex-wrap: wrap; gap: 6px; flex-grow: 1; min-height: 35px; }
         .player-tag { background: #ffffff; color: #000; padding: 5px 12px; border-radius: 5px; font-weight: 800; cursor: grab; font-size: 1rem; display: inline-flex; align-items: center; box-shadow: 0 3px 5px rgba(0,0,0,0.3); }
         .tier-select-mini { background: #fff; color: #000; border: none; font-weight: 900; font-size: 0.75rem; cursor: pointer; margin-right: 6px; border-radius: 4px; padding: 1px 3px; }
+        .name-text { cursor: pointer; }
+        .name-text:hover { color: var(--ow-orange); }
+        
         .game-nav { display: flex; flex-direction: column; gap: 10px; }
-        .nav-row { display: flex; gap: 6px; justify-content: center; align-items: center; }
+        .nav-row { display: flex; gap: 6px; justify-content: center; align-items: center; flex-wrap: wrap; }
         .btn { padding: 7px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; border: 1px solid var(--border-color); background: transparent; color: #888; font-size: 0.9rem; }
         .btn.active { background: var(--ow-orange); color: white; border-color: var(--ow-orange); }
         .btn-shuffle { background: #3498db; color: white; border: none; padding: 12px; font-size: 1.4rem; border-radius: 10px; cursor: pointer; font-weight: 900; margin-top: 5px; }
-        .shuffle-option-box { display: flex; justify-content: center; align-items: center; margin-top: 5px; margin-bottom: 5px; }
+        .shuffle-option-box { display: flex; flex-direction: column; align-items: center; gap: 5px; margin-top: 5px; margin-bottom: 5px; }
         .shuffle-option { display: flex; align-items: center; gap: 6px; color: #888; font-size: 0.75rem; cursor: pointer; user-select: none; }
         .shuffle-option input { cursor: pointer; margin: 0; width: 14px; height: 14px; }
-        .btn-clear { background: #c0392b; color: white; border: none; padding: 3px 7px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; }
+        
+        /* 버튼 컨테이너 및 공통 스타일 */
+        .btn-group { display: flex; gap: 5px; }
+        .btn-clear { background: #c0392b; color: white; border: none; padding: 3px 7px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; font-weight: bold; }
+        .btn-return { background: #555; color: white; border: none; padding: 3px 7px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; font-weight: bold; }
+        .btn-return:hover { background: #777; }
+        
+        #teamCountSelect {
+            background: #121417;
+            color: var(--ow-orange);
+            border: 1px solid var(--border-color);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            outline: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
         #ladderWidget { margin-top: 8px; position: relative; }
         #ladderToggle { width: 100%; background: #27ae60; color: white; border: none; border-radius: 8px; padding: 10px; font-weight: 800; cursor: pointer; font-size: 1rem; }
         #ladderBox { display: none; position: absolute; right: 0; top: 50px; z-index: 1000; background: #1e2126; border: 2px solid #27ae60; border-radius: 12px; padding: 20px; box-shadow: 0 10px 50px rgba(0,0,0,0.9); width: 280px; }
@@ -40,36 +72,50 @@
         .cap-input { flex: 1; background: #121417; border: 1px solid #333; color: #fff; padding: 6px; border-radius: 4px; font-size: 0.9rem; }
         .board { display: flex; flex-wrap: wrap; gap: 18px; justify-content: center; width: 100%; padding: 10px; margin-top: 10px; }
         .team-card { background: var(--bg-panel); border-radius: 12px; padding: 15px; border-top: 10px solid #555; width: var(--card-width); flex-shrink: 0; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        .team-1 { border-top-color: #3498db; } .team-2 { border-top-color: #e74c3c; } .team-3 { border-top-color: #f1c40f; } .team-4 { border-top-color: #9b59b6; }
+        
+        .team-1 { border-top-color: #3498db; } .team-2 { border-top-color: #e74c3c; } 
+        .team-3 { border-top-color: #f1c40f; } .team-4 { border-top-color: #9b59b6; }
+        .team-5 { border-top-color: #1abc9c; } .team-6 { border-top-color: #e67e22; }
+        .team-7 { border-top-color: #ecf0f1; } .team-8 { border-top-color: #95a5a6; }
+        .team-9 { border-top-color: #34495e; } .team-10 { border-top-color: #27ae60; }
+
         .team-title { text-align: center; font-size: 1.6rem; font-weight: 900; margin-bottom: 15px; }
         .slot { background: #121417; border: 1px dashed #333; margin-bottom: 8px; padding: 8px 14px; border-radius: 10px; display: flex; align-items: center; min-height: 52px; gap: 12px; position: relative; }
         .slot-label { width: 60px; font-weight: 800; color: var(--ow-orange); font-size: 0.8rem; }
         .lock-btn { margin-left: auto; cursor: pointer; opacity: 0.2; font-size: 1.4rem; transition: 0.2s; }
         .lock-btn.locked { opacity: 1; color: var(--ow-orange); }
         .remove-btn { color: #ff4d4d; font-size: 0.85rem; cursor: pointer; margin-left: 6px; }
+
         .map-unit { padding:4px 10px; background:#1e2126; border:1px solid #383e47; border-radius:6px; font-size:0.85rem; cursor:pointer; color:#bbb; transition: 0.2s; }
         .map-unit:hover { background: #2a2e35; color: #fff; }
         .map-unit.done { text-decoration: line-through; color: #555 !important; opacity: 0.5; background: #121417; border-color: #222; }
+        
         .text-red { color: #ff4d4d !important; font-weight: bold; }
         .map-header { text-align: center; margin-bottom: 20px; width: 100%; }
         .map-header .title { font-size: 1.5rem; font-weight: 900; color: #3498db; display: block; margin-bottom: 5px; }
-        .map-header .desc { font-size: 0.85rem; color: #888; }
+        
+        .slot-group-divider { height: 1px; background: #333; margin: 15px 0; position: relative; }
+        .slot-group-divider::after { content: "Next Squad"; position: absolute; top: -8px; left: 50%; transform: translateX(-50%); background: var(--bg-panel); padding: 0 10px; font-size: 0.65rem; color: #555; font-weight: bold; text-transform: uppercase; }
 
-        /* 피드백 문구 전용 스타일 */
-        .feedback-text {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            font-size: 0.75rem;
-            color: #ffffff;
-            opacity: 0.6;
-            font-weight: normal;
-        }
+        /* 이동 팝업 스타일 */
+        #movePopupOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
+        #movePopup { background: #1e2126; border: 2px solid var(--ow-orange); border-radius: 15px; width: 500px; padding: 20px; box-shadow: 0 0 30px rgba(240, 100, 20, 0.3); }
+        .popup-title { font-size: 1.2rem; font-weight: 900; margin-bottom: 15px; text-align: center; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .move-option-grid { display: flex; flex-direction: column; gap: 10px; max-height: 60vh; overflow-y: auto; padding-right: 5px; }
+        .move-option-grid::-webkit-scrollbar { width: 6px; }
+        .move-option-grid::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        .move-btn { background: #2a2e35; border: 1px solid #383e47; color: #fff; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; text-align: left; transition: 0.2s; display: flex; flex-direction: column; gap: 4px; }
+        .move-btn:hover { background: var(--ow-orange); border-color: var(--ow-orange); }
+        .move-btn .team-info { font-size: 0.75rem; color: #aaa; font-weight: normal; }
+        .move-btn:hover .team-info { color: #fff; opacity: 0.8; }
+        .move-btn.pool-btn { background: #34495e; text-align: center; align-items: center; }
     </style>
 </head>
 <body>
 
-    <div class="feedback-text">🚨개선사항 또는 피드백 SOOP닉네임 H4rry_ 로 쪽지주세요</div>
+    <div class="feedback-notice">
+        개선사항은 SOOP 닉네임 <b>H4rry_</b> 로 쪽지 보내주세요.
+    </div>
 
     <h1>조디악방 판떼기</h1>
 
@@ -80,8 +126,11 @@
         </div>
         <div class="panel">
             <div class="panel-title">
-                <span>👆드래그로 선수이동 <small style="font-size: 0.75rem; color: #666;">🔒ON/OFF시 팀장지정 , 묶밸 가능</small></span>
-                <button class="btn-clear" onclick="clearAllPlayers()">명단 비우기</button>
+                <span>👆드래그/클릭이동 <small style="font-size: 0.75rem; color: #666;">🔒ON/OFF시 팀장지정 , 묶밸 가능</small></span>
+                <div class="btn-group">
+                    <button class="btn-return" onclick="returnAllToPool()">팀원 대기실로</button>
+                    <button class="btn-clear" onclick="clearAllPlayers()">전체 초기화</button>
+                </div>
             </div>
             <div id="waitingPool"></div>
         </div>
@@ -93,15 +142,28 @@
                     <button class="btn" onclick="setGame('OW6', this)">OW 6:6</button>
                     <button class="btn" onclick="setGame('PUBG', this)">PUBG</button>
                 </div>
-                <div class="nav-row" id="teamCountNav" style="margin-top: 5px;">
+                
+                <div class="nav-row" style="margin-top: 5px;">
                     <span style="font-size: 0.75rem; color: #666; margin-right: 5px;">팀 수 선택:</span>
-                    <button class="btn active" onclick="setTeamCount(2, this)">2팀</button>
-                    <button class="btn" onclick="setTeamCount(3, this)">3팀</button>
-                    <button class="btn" onclick="setTeamCount(4, this)">4팀</button>
+                    <select id="teamCountSelect" onchange="setTeamCount(this.value)">
+                        <option value="2">2팀</option>
+                        <option value="3">3팀</option>
+                        <option value="4">4팀</option>
+                        <option value="5">5팀</option>
+                        <option value="6">6팀</option>
+                        <option value="7">7팀</option>
+                        <option value="8">8팀</option>
+                        <option value="9">9팀</option>
+                        <option value="10">10팀</option>
+                    </select>
                 </div>
+
                 <button class="btn-shuffle" onclick="shuffleLogic()">랜덤 섞기</button>
                 <div class="shuffle-option-box">
                     <label class="shuffle-option"><input type="checkbox" id="mixPosition"> 포지션까지 섞기</label>
+                    <label id="pubg8Option" class="shuffle-option" style="display: none; color: #aaa;">
+                        <input type="checkbox" id="isPubg8" onchange="renderBoard(); saveAllData();"> 8인 팀 구성
+                    </label>
                 </div>
                 <div id="ladderWidget">
                     <button id="ladderToggle" onclick="toggleLadder()">🎲 팀뽑 순서 정하기</button>
@@ -119,12 +181,9 @@
     <div class="panel" style="width: 100%; max-width: 1600px; margin-top: 20px; border-color: #3498db;">
         <div class="map-header">
             <span class="title">오버워치 맵 추첨</span>
-            <span class="text-blue">✔️또는 맵클릭으로 각각 제외가능 , <span class="text-red">빨간글씨</span>는 MZ맵입니다</span>
+            <span style="color: #FFFFFF; font-size: 0.85rem;">✔️또는 맵클릭으로 각각 제외가능 , <span class="text-red">빨간글씨</span>는 MZ맵입니다</span>
         </div>
-
-        <div id="mapContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
-        </div>
-        
+        <div id="mapContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;"></div>
         <div style="text-align: center; margin-top: 20px; padding: 20px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: center; gap: 15px;">
             <div id="mapResult" style="font-size: 2rem; font-weight: 900; color: #fff; min-height: 60px; line-height: 1.2;">
                 <span style="color: #555; font-size: 1.2rem;">추첨 버튼을 눌러주세요</span>
@@ -133,15 +192,28 @@
         </div>
     </div>
 
+    <div id="movePopupOverlay" onclick="closeMovePopup()">
+        <div id="movePopup" onclick="event.stopPropagation()">
+            <div class="popup-title">어디로 이동할까요?</div>
+            <div id="moveOptions" class="move-option-grid"></div>
+        </div>
+    </div>
+
 <script>
     let currentGame = 'LOL', currentTeamCount = 2, lastCaptains = [];
+    let activePlayerId = null; 
     const STORAGE_KEY = "ZODIAC_BOARD_DATA_V2";
     
     const CONFIG = {
         'LOL': { type: 'pos', pos: ['탑', '정글', '미드', '원딜', '서폿'], options: ['탑', '정글', '미드', '원딜', '서폿', '❓']},
         'OW5': { type: 'pos', pos: ['탱커', '딜러1', '딜러2', '힐러1', '힐러2'], options: ['탱커', '딜러1', '딜러2', '힐러1', '힐러2', '❓']},
         'OW6': { type: 'pos', pos: ['탱커1', '탱커2', '딜러1', '딜러2', '힐러1', '힐러2'], options: ['탱커1', '탱커2', '딜러1', '딜러2', '힐러1', '힐러2','❓']},
-        'PUBG': { type: 'tier', pos: ['1번핑', '2번핑', '3번핑', '4번핑'], options: ['1티어', '2티어', '3티어', '4티어', '5티어', '6티어', '7티어', '8티어', '아가티어',]}
+        'PUBG': { 
+            type: 'tier', 
+            pos: ['1번핑', '2번핑', '3번핑', '4번핑'], 
+            pos8: ['1번핑', '2번핑', '3번핑', '4번핑', '1번핑', '2번핑', '3번핑', '4번핑'], 
+            options: ['1티어', '2티어', '3티어', '4티어', '5티어', '6티어', '7티어', '8티어', '아가티어']
+        }
     };
 
     const owMaps = {
@@ -160,6 +232,7 @@
         const data = {
             currentGame,
             currentTeamCount,
+            isPubg8: document.getElementById('isPubg8').checked,
             players: Array.from(document.querySelectorAll('.player-tag')).map(p => ({
                 name: p.querySelector('.name-text').innerText,
                 val: p.dataset.val,
@@ -189,18 +262,17 @@
         }
         const data = JSON.parse(saved);
         currentGame = data.currentGame;
-        currentTeamCount = data.currentTeamCount;
+        currentTeamCount = data.currentTeamCount || 2;
+        if(data.isPubg8 !== undefined) document.getElementById('isPubg8').checked = data.isPubg8;
 
         document.querySelectorAll('.game-nav .btn').forEach(b => {
             const clickAttr = b.getAttribute('onclick');
             if(clickAttr && clickAttr.includes(`'${currentGame}'`)) b.classList.add('active');
             else b.classList.remove('active');
         });
-        document.querySelectorAll('#teamCountNav .btn').forEach(b => {
-            const clickAttr = b.getAttribute('onclick');
-            if(clickAttr && clickAttr.includes(`${currentTeamCount},`)) b.classList.add('active');
-            else b.classList.remove('active');
-        });
+        
+        togglePubgOption();
+        document.getElementById('teamCountSelect').value = currentTeamCount;
 
         renderPoolRows();
         renderBoard();
@@ -209,10 +281,13 @@
         data.players.forEach(p => {
             const tag = createTagElement(p.name, p.val, p.isLocked);
             if (p.parentType === 'slot') {
-                const slot = document.querySelector(`.team-${p.team} .slot[data-pos="${p.pos}"]`);
-                if (slot) {
-                    slot.appendChild(tag);
-                    syncLockStates(slot, tag);
+                const teamCard = document.querySelector(`.team-${p.team}`);
+                if(teamCard) {
+                    const slot = Array.from(teamCard.querySelectorAll('.slot')).find(s => s.dataset.pos === p.pos && !s.querySelector('.player-tag'));
+                    if (slot) {
+                        slot.appendChild(tag);
+                        syncLockStates(slot, tag);
+                    }
                 }
             } else {
                 const row = waitingPool.querySelector(`[data-row-val="${p.rowVal}"]`);
@@ -226,12 +301,12 @@
                 if(state && state.done) m.classList.add('done');
             });
         }
-        if(data.catStates) {
-            data.catStates.forEach(s => {
-                const el = document.getElementById(s.id);
-                if(el) el.checked = s.checked;
-            });
-        }
+    }
+
+    function togglePubgOption() {
+        const opt = document.getElementById('pubg8Option');
+        opt.style.display = (currentGame === 'PUBG') ? 'flex' : 'none';
+        if (currentGame !== 'PUBG') document.getElementById('isPubg8').checked = false;
     }
 
     nameInput.addEventListener('input', (e) => {
@@ -261,9 +336,88 @@
         const tag = document.createElement('div'); tag.className = 'player-tag'; tag.id = 'p-' + Math.random().toString(36).substr(2, 9);
         const currentVal = val || opts[opts.length - 1];
         tag.dataset.val = currentVal; tag.dataset.isLocked = isLocked; tag.draggable = true;
-        tag.innerHTML = `<select class="tier-select-mini" onchange="updateTagRow(this.parentElement, this.value)">${opts.map(o => `<option value="${o}" ${o==currentVal ? 'selected' : ''}>${o}</option>`).join('')}</select><span class="name-text">${name}</span><span class="remove-btn" onclick="this.parentElement.remove(); saveAllData();">✕</span>`;
+        tag.innerHTML = `<select class="tier-select-mini" onchange="updateTagRow(this.parentElement, this.value)">${opts.map(o => `<option value="${o}" ${o==currentVal ? 'selected' : ''}>${o}</option>`).join('')}</select><span class="name-text" onclick="openMovePopup('${tag.id}')">${name}</span><span class="remove-btn" onclick="this.parentElement.remove(); saveAllData();">✕</span>`;
         tag.ondragstart = (ev) => ev.dataTransfer.setData("text", ev.target.id);
         return tag;
+    }
+
+    /* 팝업 관련 함수들 */
+    function openMovePopup(id) {
+        activePlayerId = id;
+        const player = document.getElementById(id);
+        if(!player) return;
+        const playerName = player.querySelector('.name-text').innerText;
+        const optionsDiv = document.getElementById('moveOptions');
+        optionsDiv.innerHTML = "";
+        
+        document.querySelector('.popup-title').innerText = `${playerName} 선수 이동`;
+
+        const poolBtn = document.createElement('div');
+        poolBtn.className = 'move-btn pool-btn';
+        poolBtn.innerText = "⚓ 대기석으로 이동";
+        poolBtn.onclick = () => movePlayerToPosition('pool');
+        optionsDiv.appendChild(poolBtn);
+
+        for(let i=1; i<=currentTeamCount; i++) {
+            const teamCard = document.querySelector(`.team-${i}`);
+            const members = Array.from(teamCard.querySelectorAll('.player-tag .name-text')).map(n => n.innerText);
+            const btn = document.createElement('div');
+            btn.className = 'move-btn';
+            let infoText = members.length > 0 ? `(${members.length}명): ${members.join(', ')}` : `(0명): 비어있음`;
+            btn.innerHTML = `<span>TEAM ${i}</span><span class="team-info">${infoText}</span>`;
+            btn.onclick = () => movePlayerToPosition('team', i);
+            optionsDiv.appendChild(btn);
+        }
+        document.getElementById('movePopupOverlay').style.display = "flex";
+    }
+
+    function closeMovePopup() {
+        document.getElementById('movePopupOverlay').style.display = "none";
+        activePlayerId = null;
+    }
+
+    function movePlayerToPosition(type, teamNum) {
+        const player = document.getElementById(activePlayerId);
+        if(!player) return;
+        const sourceSlot = player.parentElement;
+        if(type === 'pool') {
+            const row = waitingPool.querySelector(`[data-row-val="${player.dataset.val}"]`);
+            if(row) row.appendChild(player);
+            if (sourceSlot.classList.contains('slot')) syncLockStates(sourceSlot, null);
+        } else {
+            const teamCard = document.querySelector(`.team-${teamNum}`);
+            let targetSlot = Array.from(teamCard.querySelectorAll('.slot')).find(s => s.dataset.pos === player.dataset.val && !s.querySelector('.player-tag'));
+            if(!targetSlot) targetSlot = teamCard.querySelector('.slot:not(:has(.player-tag))');
+            if(targetSlot) {
+                if (sourceSlot.classList.contains('slot')) syncLockStates(sourceSlot, null);
+                targetSlot.appendChild(player);
+                updatePlayerValue(player, targetSlot.dataset.pos);
+                syncLockStates(targetSlot, player);
+            } else {
+                alert(`TEAM ${teamNum}에 빈 자리가 없습니다!`);
+                return;
+            }
+        }
+        saveAllData();
+        closeMovePopup();
+    }
+
+    /* 팀원 대기실로 이동 로직 */
+    function returnAllToPool() {
+        const teamPlayers = Array.from(document.querySelectorAll('.slot .player-tag'));
+        if(teamPlayers.length === 0) return;
+        
+        teamPlayers.forEach(p => {
+            const sourceSlot = p.parentElement;
+            // 잠금 해제
+            p.dataset.isLocked = "false";
+            syncLockStates(sourceSlot, null);
+            
+            // 본인 밸류에 맞는 대기실 줄로 이동
+            const row = waitingPool.querySelector(`[data-row-val="${p.dataset.val}"]`);
+            if(row) row.appendChild(p);
+        });
+        saveAllData();
     }
 
     function toggleLadder() { const box = document.getElementById('ladderBox'); box.style.display = (box.style.display !== 'block') ? 'block' : 'none'; if (box.style.display === 'block') renderCaptainInputs(); }
@@ -294,14 +448,43 @@
     function clearAllPlayers() { if(confirm("모든 명단을 초기화하시겠습니까?")) { renderPoolRows(); document.querySelectorAll('.slot .player-tag').forEach(p => p.remove()); document.querySelectorAll('.lock-btn').forEach(l => l.classList.remove('locked')); lastCaptains = []; localStorage.removeItem(STORAGE_KEY); location.reload(); } }
     
     function updateTagRow(tag, newVal) { tag.dataset.val = newVal; if(tag.parentElement.classList.contains('pool-row-content')) { const targetRow = waitingPool.querySelector(`[data-row-val="${newVal}"]`); if(targetRow) targetRow.appendChild(tag); } saveAllData(); }
-    function setGame(game, btn) { currentGame = game; document.querySelectorAll('.game-nav .btn').forEach(b => { if(b.getAttribute('onclick') && b.getAttribute('onclick').includes('setGame')) b.classList.remove('active'); }); btn.classList.add('active'); const players = Array.from(document.querySelectorAll('.player-tag')).map(p => ({name: p.querySelector('.name-text').innerText, val: p.dataset.val})); renderPoolRows(); renderBoard(); players.forEach(p => { const tag = createTagElement(p.name); const opts = CONFIG[currentGame].options; const targetRow = waitingPool.querySelector(`[data-row-val="${opts[opts.length-1]}"]`); if(targetRow) targetRow.appendChild(tag); }); saveAllData(); }
-    function setTeamCount(count, btn) { currentTeamCount = count; document.querySelectorAll('#teamCountNav .btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); renderBoard(); saveAllData(); }
+    
+    function setGame(game, btn) { 
+        currentGame = game; 
+        document.querySelectorAll('.game-nav .btn').forEach(b => { if(b.getAttribute('onclick') && b.getAttribute('onclick').includes('setGame')) b.classList.remove('active'); }); 
+        btn.classList.add('active'); 
+        togglePubgOption();
+        const players = Array.from(document.querySelectorAll('.player-tag')).map(p => ({name: p.querySelector('.name-text').innerText, val: p.dataset.val})); 
+        renderPoolRows(); 
+        renderBoard(); 
+        players.forEach(p => { 
+            const tag = createTagElement(p.name); 
+            const opts = CONFIG[currentGame].options; 
+            const targetRow = waitingPool.querySelector(`[data-row-val="${opts[opts.length-1]}"]`); 
+            if(targetRow) targetRow.appendChild(tag); 
+        }); 
+        saveAllData(); 
+    }
+    
+    function setTeamCount(count) { currentTeamCount = parseInt(count); renderBoard(); saveAllData(); }
     
     function renderBoard() {
-        const board = document.getElementById('gameBoard'); board.innerHTML = "";
+        const board = document.getElementById('gameBoard'); 
+        board.innerHTML = "";
+        const isPubg8 = (currentGame === 'PUBG' && document.getElementById('isPubg8').checked);
+        const positions = isPubg8 ? CONFIG.PUBG.pos8 : CONFIG[currentGame].pos;
         for (let t = 1; t <= currentTeamCount; t++) {
             const card = document.createElement('div'); card.className = `team-card team-${t}`; card.innerHTML = `<div class="team-title">TEAM ${t}</div>`;
-            CONFIG[currentGame].pos.forEach((pos) => { const slot = document.createElement('div'); slot.className = 'slot'; slot.dataset.pos = pos; slot.setAttribute('ondrop', 'drop(event)'); slot.setAttribute('ondragover', 'allowDrop(event)'); slot.innerHTML = `<div class="slot-label">${pos}</div><div class="lock-btn" onclick="toggleLock(this)">🔒</div>`; card.appendChild(slot); });
+            positions.forEach((pos, index) => { 
+                if (isPubg8 && index === 4) {
+                    const divider = document.createElement('div');
+                    divider.className = 'slot-group-divider';
+                    card.appendChild(divider);
+                }
+                const slot = document.createElement('div'); slot.className = 'slot'; slot.dataset.pos = pos; slot.setAttribute('ondrop', 'drop(event)'); slot.setAttribute('ondragover', 'allowDrop(event)'); 
+                slot.innerHTML = `<div class="slot-label">${pos}</div><div class="lock-btn" onclick="toggleLock(this)">🔒</div>`; 
+                card.appendChild(slot); 
+            });
             board.appendChild(card);
         }
     }
@@ -320,8 +503,15 @@
             if (!isMixPosition) { targets = targets.filter(p => { if (p.dataset.val === '✨') return true; const s = slots.find(s => !s.querySelector('.player-tag') && !s.querySelector('.lock-btn').classList.contains('locked') && s.dataset.pos === p.dataset.val); if (s) { updatePlayerValue(p, s.dataset.pos); s.appendChild(p); syncLockStates(s, p); return false; } return true; }); }
             targets.forEach(p => { const s = slots.find(s => !s.querySelector('.player-tag') && !s.querySelector('.lock-btn').classList.contains('locked')); if (s) { updatePlayerValue(p, s.dataset.pos); s.appendChild(p); syncLockStates(s, p); } });
         } else {
-            let groups = {}; CONFIG.PUBG.options.forEach(o => groups[o] = []); targets.forEach(p => groups[p.dataset.val].push(p)); let tidx = 0;
-            CONFIG.PUBG.options.forEach(o => { while(groups[o].length > 0) { let s = document.querySelector(`.team-${(tidx % currentTeamCount) + 1} .slot:not(:has(.player-tag)):not(:has(.locked))`); if (s) { s.appendChild(groups[o].shift()); syncLockStates(s, s.querySelector('.player-tag')); } tidx++; if (tidx > 200) break; } });
+            let groups = {}; CONFIG.PUBG.options.forEach(o => groups[o] = []); targets.forEach(p => groups[p.dataset.val].push(p)); 
+            let tidx = 0;
+            CONFIG.PUBG.options.forEach(o => { 
+                while(groups[o].length > 0) { 
+                    let s = document.querySelector(`.team-${(tidx % currentTeamCount) + 1} .slot:not(:has(.player-tag)):not(:has(.locked))`); 
+                    if (s) { const tag = groups[o].shift(); s.appendChild(tag); updatePlayerValue(tag, s.dataset.pos); syncLockStates(s, tag); } 
+                    tidx++; if (tidx > 1000) break; 
+                } 
+            });
         }
         saveAllData();
     }
@@ -346,23 +536,13 @@
         const container = document.getElementById('mapContainer'); container.innerHTML = "";
         const mzMaps = ["사모아", "샴발리 수도원", "서킷 로얄", "파라이수", "뉴 퀸 스트리트", "이스페란사", "콜로세오", "루나사피", "뉴 정크 시티", "수라바사", "아틀리스"];
         for (const [cat, maps] of Object.entries(owMaps)) {
-            const catBox = document.createElement('div');
-            catBox.style.cssText = "background: #121417; padding: 12px; border-radius: 10px; border: 1px solid #333;";
-            catBox.innerHTML = `
-                <div style="margin-bottom:10px; font-weight:bold; display:flex; align-items:center; gap:8px;">
-                    <input type="checkbox" id="cat-${cat}" checked style="width:16px; height:16px; cursor:pointer;" onchange="saveAllData()">
-                    <label for="cat-${cat}" style="color:var(--ow-orange); cursor:pointer; font-size:0.9rem;">${cat}</label>
-                </div>
-                <div id="list-${cat}" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
-            `;
+            const catBox = document.createElement('div'); catBox.style.cssText = "background: #121417; padding: 12px; border-radius: 10px; border: 1px solid #333;";
+            catBox.innerHTML = `<div style="margin-bottom:10px; font-weight:bold; display:flex; align-items:center; gap:8px;"><input type="checkbox" id="cat-${cat}" checked style="width:16px; height:16px; cursor:pointer;" onchange="saveAllData()"><label for="cat-${cat}" style="color:var(--ow-orange); cursor:pointer; font-size:0.9rem;">${cat}</label></div><div id="list-${cat}" style="display:flex; flex-wrap:wrap; gap:6px;"></div>`;
             container.appendChild(catBox);
             const listDiv = catBox.querySelector(`#list-${cat}`);
             maps.forEach(m => {
-                const span = document.createElement('span');
-                span.className = 'map-unit';
-                if (mzMaps.includes(m)) { span.classList.add('text-red'); }
-                span.textContent = m;
-                span.onclick = () => { span.classList.toggle('done'); saveAllData(); };
+                const span = document.createElement('span'); span.className = 'map-unit'; if (mzMaps.includes(m)) span.classList.add('text-red');
+                span.textContent = m; span.onclick = () => { span.classList.toggle('done'); saveAllData(); };
                 listDiv.appendChild(span);
             });
         }
@@ -370,12 +550,7 @@
 
     function drawMap() {
         let pool = [];
-        for (const cat in owMaps) {
-            if (document.getElementById(`cat-${cat}`).checked) {
-                const maps = document.querySelectorAll(`#list-${cat} .map-unit:not(.done)`);
-                maps.forEach(m => pool.push({name: m.textContent, cat: cat}));
-            }
-        }
+        for (const cat in owMaps) { if (document.getElementById(`cat-${cat}`).checked) { const maps = document.querySelectorAll(`#list-${cat} .map-unit:not(.done)`); maps.forEach(m => pool.push({name: m.textContent, cat: cat})); } }
         const resDiv = document.getElementById('mapResult');
         if (pool.length === 0) { resDiv.innerHTML = "<span style='color:#ff4d4d;'>추첨할 맵이 없습니다!</span>"; return; }
         const picked = pool[Math.floor(Math.random() * pool.length)];
