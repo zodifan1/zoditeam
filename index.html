@@ -52,7 +52,9 @@
         .map-unit:hover { background: #2a2e35; color: #fff; }
         .map-unit.done { text-decoration: line-through; color: #555 !important; opacity: 0.5; background: #121417; border-color: #222; }
         
-        /* 맵 섹션 텍스트 상단 배치용 스타일 */
+        /* 강조용 빨간 글씨 스타일 */
+        .text-red { color: #ff4d4d !important; font-weight: bold; }
+
         .map-header { text-align: center; margin-bottom: 20px; width: 100%; }
         .map-header .title { font-size: 1.5rem; font-weight: 900; color: #3498db; display: block; margin-bottom: 5px; }
         .map-header .desc { font-size: 0.85rem; color: #888; }
@@ -108,7 +110,7 @@
     <div class="panel" style="width: 100%; max-width: 1600px; margin-top: 20px; border-color: #3498db;">
         <div class="map-header">
             <span class="title">오버워치 맵 추첨</span>
-            <span class="desc">포함시킬 종류의 맵 ✔️ 제외시킬 맵은 클릭하면 제외가능</span>
+            <span class="text-blue">✔️또는 맵클릭으로 각각 제외가능 , <span class="text-red">빨간글씨</span>는 MZ맵입니다</span>
         </div>
 
         <div id="mapContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
@@ -127,10 +129,10 @@
     const STORAGE_KEY = "ZODIAC_BOARD_DATA_V2";
     
     const CONFIG = {
-        'LOL': { type: 'pos', pos: ['TOP', 'JNG', 'MID', 'ADC', 'SUP'], options: ['TOP', 'JNG', 'MID', 'ADC', 'SUP', '✨']},
-        'OW5': { type: 'pos', pos: ['TANK', 'DPS1', 'DPS2', 'HEAL1', 'HEAL2'], options: ['TANK', 'DPS1', 'DPS2', 'HEAL1', 'HEAL2', '✨']},
-        'OW6': { type: 'pos', pos: ['TANK1', 'TANK2', 'DPS1', 'DPS2', 'HEAL1', 'HEAL2'], options: ['TANK1', 'TANK2', 'DPS1', 'DPS2', 'HEAL1', 'HEAL2', '✨']},
-        'PUBG': { type: 'tier', pos: ['1번', '2번', '3번', '4번'], options: ['1T', '2T', '3T', '4T', '5T', '6T', '7T', '8T', '9T']}
+        'LOL': { type: 'pos', pos: ['탑', '정글', '미드', '원딜', '서폿'], options: ['탑', '정글', '미드', '원딜', '서폿', '❓']},
+        'OW5': { type: 'pos', pos: ['탱커', '딜러1', '딜러2', '힐러1', '힐러2'], options: ['탱커', '딜러1', '딜러2', '힐러1', '힐러2', '❓']},
+        'OW6': { type: 'pos', pos: ['탱커1', '탱커2', '딜러1', '딜러2', '힐러1', '힐러2'], options: ['탱커1', '탱커2', '딜러1', '딜러2', '힐러1', '힐러2','❓']},
+        'PUBG': { type: 'tier', pos: ['1번핑', '2번핑', '3번핑', '4번핑'], options: ['1티어', '2티어', '3티어', '4티어', '5티어', '6티어', '7티어', '8티어', '아가티어',]}
     };
 
     const owMaps = {
@@ -259,7 +261,7 @@
     function loadFromPool() { const names = Array.from(document.querySelectorAll('.player-tag .name-text')).map(s => s.innerText); if (names.length === 0) { alert("등록된 명단이 없습니다."); return; } lastCaptains = names; renderCaptainInputs(); }
     
     function renderCaptainInputs() {
-        let html = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;"><span style="font-size: 0.8rem; color: #aaa;">이름을 입력하거나 불러오세요.</span><button class="btn" style="padding:2px 6px; font-size:0.7rem; color:#27ae60; border-color:#27ae60;" onclick="loadFromPool()">명단 불러오기</button></div><div id="capInputsArea">`;
+        let html = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;"><span style="font-size: 0.8rem; color: #aaa;">팀장 이름 작성후 추첨.</span><button class="btn" style="padding:2px 6px; font-size:0.7rem; color:#27ae60; border-color:#27ae60;" onclick="loadFromPool()">전체 명단 불러오기</button></div><div id="capInputsArea">`;
         const count = Math.max(lastCaptains.length, currentTeamCount);
         for(let i=0; i<count; i++) { html += `<div class="ladder-row"><span style="color:#27ae60; font-weight:bold; width:20px;">${i+1}</span><input type="text" class="cap-input" value="${lastCaptains[i]||''}"> <button style="background:transparent; border:none; color:#555; cursor:pointer;" onclick="this.parentElement.remove()">✕</button></div>`; }
         html += `</div><div style="display:flex; gap:5px; margin-top:15px;"><button class="btn" style="flex:1; border-color:#555;" onclick="addCapRow()">+ 항목 추가</button><button class="btn" style="flex:1; background:#27ae60; color:#fff; border:none;" onclick="handleStartShuffle()">순서 추첨</button></div>`;
@@ -333,6 +335,9 @@
 
     function initMapManager() {
         const container = document.getElementById('mapContainer'); container.innerHTML = "";
+        // 빨간 글씨로 표시할 맵 목록
+        const mzMaps = ["사모아", "샴발리 수도원", "서킷 로얄", "파라이수", "뉴 퀸 스트리트", "이스페란사", "콜로세오", "루나사피", "뉴 정크 시티", "수라바사", "아틀리스"];
+
         for (const [cat, maps] of Object.entries(owMaps)) {
             const catBox = document.createElement('div');
             catBox.style.cssText = "background: #121417; padding: 12px; border-radius: 10px; border: 1px solid #333;";
@@ -348,6 +353,10 @@
             maps.forEach(m => {
                 const span = document.createElement('span');
                 span.className = 'map-unit';
+                // 지정된 맵 이름이면 text-red 클래스 추가
+                if (mzMaps.includes(m)) {
+                    span.classList.add('text-red');
+                }
                 span.textContent = m;
                 span.onclick = () => { span.classList.toggle('done'); saveAllData(); };
                 listDiv.appendChild(span);
@@ -369,7 +378,10 @@
             return;
         }
         const picked = pool[Math.floor(Math.random() * pool.length)];
-        resDiv.innerHTML = `<span style="font-size:0.9rem; color:var(--ow-orange); opacity:0.8;">[${picked.cat}]</span><br>${picked.name}`;
+        // 추첨 결과에서도 MZ맵이면 빨간색으로 표시
+        const mzMaps = ["사모아", "샴발리 수도원", "서킷 로얄", "파라이수", "뉴 퀸 스트리트","이스페란사", "콜로세오", "루나사피", "뉴 정크 시티", "수라바사", "아틀리스"];
+        const isMz = mzMaps.includes(picked.name);
+        resDiv.innerHTML = `<span style="font-size:0.9rem; color:var(--ow-orange); opacity:0.8;">[${picked.cat}]</span><br><span class="${isMz ? 'text-red' : ''}">${picked.name}</span>`;
     }
 
     loadAllData();
